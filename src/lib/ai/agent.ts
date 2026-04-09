@@ -1,20 +1,19 @@
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import type {
   UserProfile,
   ShoppingIntent,
   RankedProduct,
   Product,
   StyleTag,
-  ProductCategory,
 } from '@/types';
 import { searchProducts } from '../search';
 import { calculateFitScore, getFitLabel } from './fit-scorer';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // ─── Intent extraction ────────────────────────────────────────────────────────
 
-/** Extract structured shopping intent from the user message using a fast heuristic + Claude. */
+/** Extract structured shopping intent from the user message. */
 async function extractIntent(
   message: string,
   history: Array<{ role: 'user' | 'assistant'; content: string }>,
@@ -33,18 +32,25 @@ Given a user message, output a JSON object with these optional fields:
 
 Output ONLY valid JSON with no explanation.`;
 
-  const recent = history.slice(-4).map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+  const recent = history.slice(-4).map(m => ({
+    role: m.role as 'user' | 'assistant',
+    content: m.content,
+  }));
 
   try {
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
       max_tokens: 256,
-      system: systemPrompt,
-      messages: [...recent, { role: 'user', content: message }],
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...recent,
+        { role: 'user', content: message },
+      ],
     });
 
-    const text = response.content[0].type === 'text' ? response.content[0].text : '{}';
-    const parsed = JSON.parse(text.trim()) as Partial<ShoppingIntent>;
+    const text = response.choices[0].message.content ?? '{}';
+    const parsed = JSON.parse(text) as Partial<ShoppingIntent>;
     return { ...parsed, rawQuery: message };
   } catch {
     return { rawQuery: message, keywords: message.split(/\s+/).filter(w => w.length > 3) };
@@ -67,14 +73,14 @@ function boostByProfile(product: Product, profile: Partial<UserProfile>): number
   return boost;
 }
 
-// ─── Claude ranking + reason generation ──────────────────────────────────────
+// ─── OpenAI ranking + reason generation ──────────────────────────────────────
 
 interface RankResult {
   text: string;
   products: Array<{ id: string; reason: string; rank: number }>;
 }
 
-async function rankWithClaude(
+async function rankWithAI(
   query: string,
   profile: Partial<UserProfile>,
   products: Product[],
@@ -111,22 +117,26 @@ ${productList}
 
 Rank these products and generate personalised reasons for the top ones. Include all products that are relevant.`;
 
-  const recent = history.slice(-4).map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+  const recent = history.slice(-4).map(m => ({
+    role: m.role as 'user' | 'assistant',
+    content: m.content,
+  }));
 
   try {
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 1024,
-      system: systemPrompt,
-      messages: [...recent, { role: 'user', content: userContent }],
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...recent,
+        { role: 'user', content: userContent },
+      ],
     });
 
-    const raw = response.content[0].type === 'text' ? response.content[0].text : '{}';
-    // Strip markdown code fences if present
-    const json = raw.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
-    return JSON.parse(json) as RankResult;
+    const raw = response.choices[0].message.content ?? '{}';
+    return JSON.parse(raw) as RankResult;
   } catch {
-    // Fallback: return products in their original order with generic reasons
     return {
       text: `Here are some great picks for "${query}" based on your profile!`,
       products: products.map((p, i) => ({
@@ -150,10 +160,10 @@ function buildProfileSummary(profile: Partial<UserProfile>): string {
 
   const m = profile.measurements ?? {};
   const mParts: string[] = [];
-  if (m.height)  mParts.push(`height ${m.height}cm`);
-  if (m.chest)   mParts.push(`chest ${m.chest}cm`);
-  if (m.waist)   mParts.push(`waist ${m.waist}cm`);
-  if (m.inseam)  mParts.push(`inseam ${m.inseam}cm`);
+  if (m.height)   mParts.push(`height ${m.height}cm`);
+  if (m.chest)    mParts.push(`chest ${m.chest}cm`);
+  if (m.waist)    mParts.push(`waist ${m.waist}cm`);
+  if (m.inseam)   mParts.push(`inseam ${m.inseam}cm`);
   if (m.shoeSize) mParts.push(`shoe size US ${m.shoeSize}`);
   if (mParts.length) lines.push(`Measurements: ${mParts.join(', ')}`);
 
@@ -193,8 +203,8 @@ export async function processShoppingQuery(
   withBoost.sort((a, b) => b.profileBoost - a.profileBoost);
   const boostedProducts = withBoost.map(x => x.product);
 
-  // 4. Ask Claude to rank and generate reasons
-  const rankResult = await rankWithClaude(message, profile, boostedProducts.slice(0, 12), history);
+  // 4. Ask AI to rank and generate reasons
+  const rankResult = await rankWithAI(message, profile, boostedProducts.slice(0, 12), history);
 
   // 5. Build final ranked product list
   const productMap = new Map(boostedProducts.map(p => [p.id, p]));
