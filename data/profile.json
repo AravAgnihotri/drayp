@@ -1,0 +1,23 @@
+{
+  "name": "Alex",
+  "email": "",
+  "photoUrl": "",
+  "measurements": {
+    "height": 180,
+    "weight": 78,
+    "chest": 97,
+    "waist": 81,
+    "hips": 97,
+    "inseam": 81,
+    "shoeSize": 10
+  },
+  "stylePreferences": {
+    "favoriteColors": ["navy", "white", "black", "grey"],
+    "favoriteBrands": ["Nike", "Uniqlo", "Levi's"],
+    "styles": ["casual", "minimalist", "athletic"],
+    "priceMin": 20,
+    "priceMax": 200
+  },
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
