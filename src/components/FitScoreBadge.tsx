@@ -8,40 +8,43 @@ interface Props {
   size?: 'sm' | 'md';
 }
 
-const colorMap: Record<FitLabel, string> = {
-  Excellent: 'bg-emerald-500/20 text-emerald-400 ring-emerald-500/30',
-  Good:      'bg-lime-500/20 text-lime-400 ring-lime-500/30',
-  Average:   'bg-amber-500/20 text-amber-400 ring-amber-500/30',
-  Poor:      'bg-red-500/20 text-red-400 ring-red-500/30',
-  'N/A':     'bg-zinc-700/50 text-zinc-400 ring-zinc-600/30',
-};
-
-const barColorMap: Record<FitLabel, string> = {
-  Excellent: 'bg-emerald-400',
-  Good:      'bg-lime-400',
-  Average:   'bg-amber-400',
-  Poor:      'bg-red-400',
-  'N/A':     'bg-zinc-500',
+const styles: Record<FitLabel, { badge: string; bar: string }> = {
+  Excellent: {
+    badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
+    bar: 'bg-gradient-to-r from-emerald-500 to-emerald-400',
+  },
+  Good: {
+    badge: 'bg-lime-500/15 text-lime-400 border-lime-500/25',
+    bar: 'bg-gradient-to-r from-lime-500 to-lime-400',
+  },
+  Average: {
+    badge: 'bg-amber-500/15 text-amber-400 border-amber-500/25',
+    bar: 'bg-gradient-to-r from-amber-500 to-amber-400',
+  },
+  Poor: {
+    badge: 'bg-red-500/15 text-red-400 border-red-500/25',
+    bar: 'bg-gradient-to-r from-red-500 to-red-400',
+  },
+  'N/A': {
+    badge: 'bg-slate-500/15 text-slate-400 border-slate-500/25',
+    bar: 'bg-slate-500',
+  },
 };
 
 export default function FitScoreBadge({ score, label, size = 'md' }: Props) {
+  const s = styles[label];
   const isSmall = size === 'sm';
 
   return (
-    <div className="flex flex-col gap-1">
-      <div className={`
-        inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 ring-1
-        font-medium tracking-wide
-        ${colorMap[label]}
-        ${isSmall ? 'text-xs' : 'text-xs'}
-      `}>
-        <span className="font-bold">{score}</span>
-        <span>{label} Fit</span>
+    <div className="flex flex-col gap-1.5">
+      <div className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-semibold tracking-wide ${s.badge}`}>
+        <span>{score}</span>
+        <span className="opacity-80">{label} Fit</span>
       </div>
       {!isSmall && (
-        <div className="h-1 w-full rounded-full bg-zinc-800 overflow-hidden">
+        <div className="h-1 w-full rounded-full bg-white/[0.06] overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${barColorMap[label]}`}
+            className={`h-full rounded-full transition-all duration-700 ease-out ${s.bar}`}
             style={{ width: `${score}%` }}
           />
         </div>

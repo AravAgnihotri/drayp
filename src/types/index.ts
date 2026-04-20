@@ -78,6 +78,8 @@ export interface RankedProduct extends Product {
 // ─── Shopping Intent ──────────────────────────────────────────────────────────
 
 export interface ShoppingIntent {
+  /** True when the user is only greeting, thanking, or small talk — skip product search. */
+  conversationOnly?: boolean;
   category?: ProductCategory;
   subcategories?: string[];
   colors?: string[];

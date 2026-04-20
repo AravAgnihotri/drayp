@@ -1,0 +1,95 @@
+"use client";
+
+import React, { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+
+type Position = {
+  left: number;
+  width: number;
+  opacity: number;
+};
+
+const TABS: { label: string; id: string }[] = [
+  { label: "Home",     id: "home" },
+  { label: "Account",  id: "account" },
+  { label: "About",    id: "about" },
+  { label: "Services", id: "services" },
+  { label: "Contact",  id: "contact" },
+];
+
+function scrollToSection(id: string, router: ReturnType<typeof useRouter>) {
+  if (id === "account") {
+    router.push("/account");
+    return;
+  }
+  if (id === "home") {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: "smooth" });
+}
+
+function NavHeader() {
+  const router = useRouter();
+  const [position, setPosition] = useState<Position>({
+    left: 0,
+    width: 0,
+    opacity: 0,
+  });
+
+  return (
+    <ul
+      className="relative flex w-fit rounded-full border-2 border-black bg-white p-1"
+      onMouseLeave={() => setPosition((pv) => ({ ...pv, opacity: 0 }))}
+    >
+      {TABS.map((tab) => (
+        <Tab key={tab.id} id={tab.id} setPosition={setPosition} onNavigate={(id) => scrollToSection(id, router)}>
+          {tab.label}
+        </Tab>
+      ))}
+      <Cursor position={position} />
+    </ul>
+  );
+}
+
+const Tab = ({
+  children,
+  id,
+  setPosition,
+  onNavigate,
+}: {
+  children: React.ReactNode;
+  id: string;
+  setPosition: React.Dispatch<React.SetStateAction<Position>>;
+  onNavigate: (id: string) => void;
+}) => {
+  const ref = useRef<HTMLLIElement>(null);
+  return (
+    <li
+      ref={ref}
+      onClick={() => onNavigate(id)}
+      onMouseEnter={() => {
+        if (!ref.current) return;
+        const { width } = ref.current.getBoundingClientRect();
+        setPosition({ width, opacity: 1, left: ref.current.offsetLeft });
+      }}
+      className="relative z-10 block cursor-pointer px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-white mix-blend-difference"
+    >
+      {children}
+    </li>
+  );
+};
+
+const Cursor = ({ position }: { position: Position }) => {
+  return (
+    <motion.li
+      animate={position}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      className="absolute z-0 h-6 rounded-full bg-black"
+    />
+  );
+};
+
+export default NavHeader;

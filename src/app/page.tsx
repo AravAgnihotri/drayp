@@ -1,74 +1,74 @@
 'use client';
 
-import { useState } from 'react';
-import { ShoppingBag, User, X, Menu } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import ChatInterface from '@/components/ChatInterface';
-import ProfilePanel from '@/components/ProfilePanel';
+import AboutSection from '@/components/AboutSection';
+import ServicesSection from '@/components/ServicesSection';
+import NavHeader from '@/components/ui/nav-header';
+import { Button } from '@/components/ui/button';
+
+function LinkedInLogo({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.706-.52-1.248-1.342-1.248-.843 0-1.358.542-1.358 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1-.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z" />
+    </svg>
+  );
+}
 
 export default function Home() {
-  const [profileOpen, setProfileOpen] = useState(false);
-
   return (
-    <div className="flex flex-col h-screen bg-zinc-950">
-      {/* Header */}
-      <header className="flex-shrink-0 flex items-center justify-between px-4 h-14 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm z-10">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-violet-600 flex items-center justify-center">
+    <div className="flex flex-col min-h-screen">
+      {/* Sticky header */}
+      <header className="sticky top-0 z-40 flex items-center justify-between px-5 h-14 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-500/25">
             <ShoppingBag className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <span className="text-white font-bold tracking-tight">Drayp</span>
-            <span className="ml-2 text-xs text-violet-400 bg-violet-500/10 border border-violet-500/20 rounded-full px-2 py-0.5 hidden sm:inline">
-              AI Shopping Agent
-            </span>
-          </div>
+          <span className="text-[15px] font-semibold tracking-tight text-slate-900">Drayp</span>
         </div>
-
-        <button
-          onClick={() => setProfileOpen(o => !o)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 text-sm transition-colors"
-        >
-          <User className="w-4 h-4" />
-          <span className="hidden sm:inline">My Profile</span>
-        </button>
+        <NavHeader />
       </header>
 
-      {/* Main content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Chat area */}
-        <main className="flex-1 overflow-hidden">
-          <ChatInterface />
-        </main>
+      {/* Home / Chat — full viewport height minus header */}
+      <section id="home" className="h-[calc(100vh-3.5rem)] bg-grid">
+        <ChatInterface />
+      </section>
 
-        {/* Profile sidebar — slide in on desktop, overlay on mobile */}
-        {profileOpen && (
-          <>
-            {/* Mobile overlay */}
-            <div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 lg:hidden"
-              onClick={() => setProfileOpen(false)}
-            />
-            {/* Panel */}
-            <aside className="
-              fixed right-0 top-14 bottom-0 w-80 bg-zinc-950 border-l border-zinc-800
-              overflow-y-auto px-4 pt-5 z-30
-              lg:relative lg:top-auto lg:bottom-auto lg:z-auto
-              animate-slide-up
-            ">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-sm font-semibold text-white">Your Style Profile</h2>
-                <button
-                  onClick={() => setProfileOpen(false)}
-                  className="text-zinc-500 hover:text-white transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <ProfilePanel onClose={() => setProfileOpen(false)} />
-            </aside>
-          </>
-        )}
-      </div>
+      {/* About */}
+      <AboutSection />
+
+      {/* Services */}
+      <ServicesSection />
+
+      <footer
+        id="contact"
+        className="border-t border-slate-200 bg-white px-6 py-10"
+      >
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <p className="text-sm text-slate-500">
+            Questions or partnerships? Reach us on LinkedIn.
+          </p>
+          <Button
+            asChild
+            size="icon"
+            className="h-11 w-11 shrink-0 rounded-md border-0 bg-[#0A66C2] text-white shadow-sm hover:bg-[#004182] focus-visible:ring-[#0A66C2]"
+          >
+            <a
+              href="https://www.linkedin.com/company/a2a-labs/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Drayp on LinkedIn"
+            >
+              <LinkedInLogo className="h-6 w-6" />
+            </a>
+          </Button>
+        </div>
+      </footer>
     </div>
   );
 }

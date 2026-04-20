@@ -6,10 +6,106 @@ import type {
   Product,
   StyleTag,
 } from '@/types';
+import { getOpenAiApiKey } from '@/lib/env';
 import { searchProducts } from '../search';
 import { calculateFitScore, getFitLabel } from './fit-scorer';
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let openaiClient: OpenAI | null = null;
+let loggedMissingOpenAiKey = false;
+
+/** Avoid instantiating at module load (breaks `next build` without env) or when key is unset. */
+function getOpenAI(): OpenAI | null {
+  const apiKey = getOpenAiApiKey();
+  if (!apiKey) {
+    if (!loggedMissingOpenAiKey) {
+      loggedMissingOpenAiKey = true;
+      console.warn('[drayp/openai] OPENAI_API_KEY is not set; using keyword / generic fallbacks.');
+    }
+    return null;
+  }
+  if (!openaiClient) openaiClient = new OpenAI({ apiKey });
+  return openaiClient;
+}
+
+function logOpenAiFailure(phase: string, err: unknown): void {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error(`[drayp/openai] ${phase} failed: ${message}`);
+}
+
+/** When OpenAI is unavailable: treat obvious greetings / thanks as non-shopping. */
+function isConversationOnlyFallback(message: string): boolean {
+  const t = message
+    .trim()
+    .toLowerCase()
+    .replace(/[!?.]+$/g, '')
+    .trim();
+  if (t.length === 0) return true;
+  if (t.length > 120) return false;
+
+  const oneLine = /^[^\n]+$/.test(message.trim());
+  if (!oneLine) return false;
+
+  if (
+    /^(hi|hey|hello|hiya|yo|sup|howdy|good\s+(morning|afternoon|evening|night))$/i.test(t)
+  ) {
+    return true;
+  }
+  if (/^(thanks|thank\s+you|thx|ty|ok|okay|cool|nice|great|got\s+it|bye|goodbye|see\s+ya|cya)$/i.test(t)) {
+    return true;
+  }
+  // "hey alex", "hi there"
+  if (/^(hi|hey|hello|yo)\s+[\w'-]{1,40}$/i.test(t)) return true;
+  if (/^(hi|hey|hello)\s+there$/i.test(t)) return true;
+
+  return false;
+}
+
+async function replyConversationOnly(
+  message: string,
+  profile: Partial<UserProfile>,
+  history: Array<{ role: 'user' | 'assistant'; content: string }>,
+): Promise<string> {
+  const name = profile.name?.trim();
+  const client = getOpenAI();
+  if (!client) {
+    if (name) {
+      return `Hey ${name}! When you're ready, tell me what you're looking for — jeans, sneakers, layers, anything — and I'll help you find pieces that fit.`;
+    }
+    return "Hey! When you're ready, tell me what you're looking for and I'll help you find pieces that fit.";
+  }
+
+  const recent = history.slice(-4).map(m => ({
+    role: m.role as 'user' | 'assistant',
+    content: m.content,
+  }));
+
+  const system = `You are Drayp, a friendly AI shopping assistant for clothing and fit.
+The user's message is small talk (greeting, thanks, goodbye) or a general question — NOT a request to find or shop for products.
+Reply in at most 2 short sentences. Be warm and natural.
+Do NOT suggest specific products, brands, or categories. Do NOT list items to buy.
+${name ? `The user's first name is ${name}; you may use it once if it feels natural.` : ''}`;
+
+  try {
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      max_tokens: 120,
+      messages: [
+        { role: 'system', content: system },
+        ...recent,
+        { role: 'user', content: message },
+      ],
+    });
+    const text = response.choices[0].message.content?.trim();
+    if (text) return text;
+  } catch (err) {
+    logOpenAiFailure('replyConversationOnly', err);
+  }
+
+  if (name) {
+    return `Hey ${name}! When you're ready to shop or compare fits, just say what you need.`;
+  }
+  return "Hey! When you're ready to shop or compare fits, just say what you need.";
+}
 
 // ─── Intent extraction ────────────────────────────────────────────────────────
 
@@ -19,7 +115,13 @@ async function extractIntent(
   history: Array<{ role: 'user' | 'assistant'; content: string }>,
 ): Promise<ShoppingIntent> {
   const systemPrompt = `You are a structured intent extractor for a fashion shopping assistant.
-Given a user message, output a JSON object with these optional fields:
+Given a user message, output a JSON object with these fields:
+
+- conversationOnly: boolean (required)
+  Set to true if the user is ONLY greeting, thanking, saying goodbye, brief small talk, OR asking what you can do / who you are — with NO intent to search for, buy, or browse clothing right now.
+  Set to false if they mention clothing, shoes, outfits, fit, sizes, budget, brands, occasions (work, gym, date, etc.), or ask to find/show/recommend/compare products.
+
+When conversationOnly is true, omit or ignore shopping fields below. When false, fill what applies:
 - category: one of "tops" | "bottoms" | "shoes" | "outerwear" | "accessories"
 - subcategories: string[] (e.g. ["t-shirt","shirt"])
 - colors: string[] (e.g. ["navy","white"])
@@ -37,6 +139,18 @@ Output ONLY valid JSON with no explanation.`;
     content: m.content,
   }));
 
+  const client = getOpenAI();
+  if (!client) {
+    const conversationOnly = isConversationOnlyFallback(message);
+    return {
+      conversationOnly,
+      rawQuery: message,
+      keywords: conversationOnly
+        ? []
+        : message.split(/\s+/).filter(w => w.length > 3),
+    };
+  }
+
   try {
     const response = await client.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -51,9 +165,18 @@ Output ONLY valid JSON with no explanation.`;
 
     const text = response.choices[0].message.content ?? '{}';
     const parsed = JSON.parse(text) as Partial<ShoppingIntent>;
-    return { ...parsed, rawQuery: message };
-  } catch {
-    return { rawQuery: message, keywords: message.split(/\s+/).filter(w => w.length > 3) };
+    const conversationOnly = parsed.conversationOnly === true;
+    return { ...parsed, conversationOnly, rawQuery: message };
+  } catch (err) {
+    logOpenAiFailure('extractIntent', err);
+    const conversationOnly = isConversationOnlyFallback(message);
+    return {
+      conversationOnly,
+      rawQuery: message,
+      keywords: conversationOnly
+        ? []
+        : message.split(/\s+/).filter(w => w.length > 3),
+    };
   }
 }
 
@@ -122,6 +245,18 @@ Rank these products and generate personalised reasons for the top ones. Include 
     content: m.content,
   }));
 
+  const client = getOpenAI();
+  if (!client) {
+    return {
+      text: `Here are some great picks for "${query}" based on your profile!`,
+      products: products.map((p, i) => ({
+        id: p.id,
+        rank: i + 1,
+        reason: `A great choice that matches your style at ${p.brand}'s quality level.`,
+      })),
+    };
+  }
+
   try {
     const response = await client.chat.completions.create({
       model: 'gpt-4o',
@@ -136,7 +271,8 @@ Rank these products and generate personalised reasons for the top ones. Include 
 
     const raw = response.choices[0].message.content ?? '{}';
     return JSON.parse(raw) as RankResult;
-  } catch {
+  } catch (err) {
+    logOpenAiFailure('rankWithAI', err);
     return {
       text: `Here are some great picks for "${query}" based on your profile!`,
       products: products.map((p, i) => ({
@@ -185,6 +321,11 @@ export async function processShoppingQuery(
 ): Promise<AgentResult> {
   // 1. Extract intent
   const intent = await extractIntent(message, history);
+
+  if (intent.conversationOnly) {
+    const text = await replyConversationOnly(message, profile, history);
+    return { text, intent };
+  }
 
   // 2. Search catalog
   const rawProducts = searchProducts(intent, 15);

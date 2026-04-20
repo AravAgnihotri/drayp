@@ -3,6 +3,9 @@ import type { ChatRequest, ChatResponse } from '@/types';
 import { processShoppingQuery } from '@/lib/ai/agent';
 import { getProfile } from '@/lib/profile/store';
 
+/** Node runtime: full `process.env` from project `.env` files (not Edge). */
+export const runtime = 'nodejs';
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as ChatRequest;

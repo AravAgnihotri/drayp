@@ -7,82 +7,81 @@ import FitScoreBadge from './FitScoreBadge';
 
 interface Props {
   product: RankedProduct;
+  index?: number;
 }
 
-export default function ProductCard({ product }: Props) {
+export default function ProductCard({ product, index = 0 }: Props) {
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
   return (
-    <div className="group relative flex flex-col rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden hover:border-zinc-600 transition-all duration-200 hover:shadow-xl hover:shadow-black/40 animate-slide-up">
-      {/* Product image */}
-      <div className="relative aspect-[4/5] bg-zinc-800 overflow-hidden">
+    <div
+      className="group relative flex flex-col rounded-xl bg-white/[0.03] border border-white/[0.06] overflow-hidden hover:border-white/[0.12] transition-all duration-300 hover-glow card-shine animate-fade-in-up"
+      style={{ animationDelay: `${index * 0.06}s`, animationFillMode: 'both' }}
+    >
+      <div className="relative aspect-[4/5] bg-slate-900 overflow-hidden">
         <Image
           src={product.imageUrl}
           alt={product.title}
           fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-          sizes="(max-width: 768px) 50vw, 25vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           unoptimized
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
         {discount > 0 && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+          <div className="absolute top-2.5 left-2.5 bg-rose-500/90 backdrop-blur-sm text-white text-[11px] font-bold px-2 py-0.5 rounded-md">
             -{discount}%
           </div>
         )}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2.5 right-2.5">
           <FitScoreBadge score={product.fitScore} label={product.fitLabel} size="sm" />
         </div>
       </div>
 
-      {/* Product info */}
-      <div className="flex flex-col gap-3 p-3">
+      <div className="flex flex-col gap-2.5 p-3.5">
         <div>
-          <p className="text-xs text-zinc-500 font-medium uppercase tracking-widest">{product.brand}</p>
-          <h3 className="text-sm font-semibold text-white leading-tight mt-0.5 line-clamp-2">
+          <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-[0.1em]">{product.brand}</p>
+          <h3 className="text-[13px] font-medium text-white leading-snug mt-0.5 line-clamp-2">
             {product.title}
           </h3>
         </div>
 
-        {/* Price */}
         <div className="flex items-baseline gap-2">
           <span className="text-base font-bold text-white">${product.price.toFixed(2)}</span>
           {product.originalPrice && (
-            <span className="text-xs text-zinc-500 line-through">${product.originalPrice.toFixed(2)}</span>
+            <span className="text-[11px] text-slate-500 line-through">${product.originalPrice.toFixed(2)}</span>
           )}
         </div>
 
-        {/* Rating */}
         {product.rating && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-            <span className="text-xs text-zinc-400">
+            <span className="text-[11px] text-slate-400">
               {product.rating.toFixed(1)}
               {product.reviewCount && (
-                <span className="text-zinc-600"> ({product.reviewCount.toLocaleString()})</span>
+                <span className="text-slate-600"> ({product.reviewCount.toLocaleString()})</span>
               )}
             </span>
           </div>
         )}
 
-        {/* Fit score bar */}
         <FitScoreBadge score={product.fitScore} label={product.fitLabel} />
 
-        {/* Reason */}
-        <p className="text-xs text-zinc-400 leading-relaxed border-t border-zinc-800 pt-2">
+        <p className="text-[12px] text-slate-400 leading-relaxed border-t border-white/[0.06] pt-2.5">
           {product.reason}
         </p>
 
-        {/* CTA */}
         <a
           href={product.productUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-auto flex items-center justify-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold py-2 px-3 transition-colors duration-150"
+          className="mt-auto flex items-center justify-center gap-2 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 hover:border-sky-500/40 text-sky-300 hover:text-sky-200 text-[13px] font-medium py-2.5 px-3 transition-all duration-200"
         >
           Shop at {product.retailer}
-          <ExternalLink className="w-3.5 h-3.5" />
+          <ExternalLink className="w-3 h-3" />
         </a>
       </div>
     </div>
