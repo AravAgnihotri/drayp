@@ -53,11 +53,23 @@ function LoginForm() {
   async function handleGoogleSignIn() {
     setGoogleBusy(true)
     setError(null)
-    await supabase.auth.signInWithOAuth({
+    const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${next}` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
     })
-    // page navigates away — no need to unset googleBusy
+    if (oauthError) {
+      const msg = oauthError.message.toLowerCase().includes("not enabled")
+        ? "Google sign-in is not enabled for this project. In Supabase: Authentication → Providers → turn on Google and add your OAuth client ID and secret."
+        : oauthError.message
+      setError(msg)
+      setGoogleBusy(false)
+      return
+    }
+    if (data.url) {
+      window.location.assign(data.url)
+      return
+    }
+    setGoogleBusy(false)
   }
 
   return (

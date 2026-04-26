@@ -1,8 +1,19 @@
+import { redirect } from "next/navigation"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { AccountSidebar } from "@/components/account/AccountSidebar"
+import { createClient } from "@/lib/supabase/server"
 
-export default function AccountLayout({ children }: { children: React.ReactNode }) {
+export default async function AccountLayout({ children }: { children: React.ReactNode }) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login?next=/account/dashboard")
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8f9fa] font-dm-sans">
       <AccountSidebar />

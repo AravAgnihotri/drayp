@@ -11,7 +11,7 @@ function isValidHttpOrHttpsUrl(url: string): boolean {
   }
 }
 
-/** Resolves URL for Supabase clients; falls back when env is missing or not a valid HTTP(S) URL. */
+/** Resolves URL for Supabase clients; falls back when env is missing or invalid. */
 export function getSupabaseUrl(): string {
   const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
   if (raw && isValidHttpOrHttpsUrl(raw)) return raw
