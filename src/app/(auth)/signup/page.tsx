@@ -84,15 +84,15 @@ export default function SignupPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-[#f8f9fa] px-6 font-dm-sans">
         <Link href="/" className="mb-8 flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#1D9E75] to-[#0F6E56] text-white shadow-sm">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#83aff0] to-[#3a70c0] text-white shadow-sm">
             <ShoppingBag className="h-[18px] w-[18px]" />
           </div>
           <span className="text-xl font-bold text-gray-900">Drayp</span>
         </Link>
 
         <div className="w-full max-w-[400px] rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#E1F5EE]">
-            <MailCheck className="h-7 w-7 text-[#0F6E56]" />
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#e8f1fd]">
+            <MailCheck className="h-7 w-7 text-[#3a70c0]" />
           </div>
           <h2 className="text-xl font-semibold text-gray-900">Check your email</h2>
           <p className="mt-2 text-sm text-gray-500">
@@ -115,7 +115,7 @@ export default function SignupPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#f8f9fa] px-6 font-dm-sans">
       {/* Logo */}
       <Link href="/" className="mb-8 flex items-center gap-2.5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#1D9E75] to-[#0F6E56] text-white shadow-sm">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#83aff0] to-[#3a70c0] text-white shadow-sm">
           <ShoppingBag className="h-[18px] w-[18px]" />
         </div>
         <span className="text-xl font-bold text-gray-900">Drayp</span>
@@ -170,7 +170,7 @@ export default function SignupPage() {
               required
               autoComplete="name"
               disabled={anyBusy}
-              className="flex h-11 w-full rounded-lg border border-gray-300 bg-white px-3.5 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-[#1D9E75] focus:outline-none focus:ring-2 focus:ring-[#1D9E75]/20 disabled:opacity-50"
+              className="flex h-11 w-full rounded-lg border border-gray-300 bg-white px-3.5 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-[#83aff0] focus:outline-none focus:ring-2 focus:ring-[#83aff0]/20 disabled:opacity-50"
             />
           </div>
 
@@ -188,7 +188,7 @@ export default function SignupPage() {
               required
               autoComplete="email"
               disabled={anyBusy}
-              className="flex h-11 w-full rounded-lg border border-gray-300 bg-white px-3.5 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-[#1D9E75] focus:outline-none focus:ring-2 focus:ring-[#1D9E75]/20 disabled:opacity-50"
+              className="flex h-11 w-full rounded-lg border border-gray-300 bg-white px-3.5 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-[#83aff0] focus:outline-none focus:ring-2 focus:ring-[#83aff0]/20 disabled:opacity-50"
             />
           </div>
 
@@ -209,7 +209,7 @@ export default function SignupPage() {
                 minLength={8}
                 autoComplete="new-password"
                 disabled={anyBusy}
-                className="flex h-11 w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-11 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-[#1D9E75] focus:outline-none focus:ring-2 focus:ring-[#1D9E75]/20 disabled:opacity-50"
+                className="flex h-11 w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-11 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-[#83aff0] focus:outline-none focus:ring-2 focus:ring-[#83aff0]/20 disabled:opacity-50"
               />
               <button
                 type="button"
@@ -234,7 +234,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={anyBusy}
-            className="flex h-11 w-full items-center justify-center rounded-lg bg-[#0F6E56] text-sm font-semibold text-white shadow-sm transition hover:bg-[#085041] disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex h-11 w-full items-center justify-center rounded-lg bg-[#3a70c0] text-sm font-semibold text-white shadow-sm transition hover:bg-[#2d5ca8] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? (
               <>
@@ -251,7 +251,7 @@ export default function SignupPage() {
       {/* Sign-in link */}
       <p className="mt-6 text-sm text-gray-500">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-[#0F6E56] hover:underline">
+        <Link href="/login" className="font-semibold text-[#3a70c0] hover:underline">
           Sign in
         </Link>
       </p>

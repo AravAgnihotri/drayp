@@ -86,11 +86,12 @@ export async function POST(req: Request) {
     data: { publicUrl },
   } = admin.storage.from(BUCKET).getPublicUrl(path)
 
-  const { error: dbError } = await supabaseUser.from("body_measurements").upsert(
+  const savedAt = new Date().toISOString()
+  const { error: dbError } = await admin.from("body_measurements").upsert(
     {
       user_id: user.id,
       reference_photo_url: publicUrl,
-      updated_at: new Date().toISOString(),
+      updated_at: savedAt,
     },
     { onConflict: "user_id" }
   )
@@ -123,5 +124,34 @@ export async function POST(req: Request) {
   }
 
   const bust = `${publicUrl}?t=${Date.now()}`
-  return NextResponse.json({ publicUrl: bust })
+  return NextResponse.json({ publicUrl: bust, saved: true, savedAt })
+}
+
+export async function GET() {
+  const supabaseUser = createClient()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabaseUser.auth.getUser()
+  if (authError || !user) {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 })
+  }
+
+  const { data, error } = await supabaseUser
+    .from("body_measurements")
+    .select("reference_photo_url, updated_at")
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (error) {
+    console.error("[body-lab/reference-photo] GET", error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  const url = data?.reference_photo_url ?? null
+  return NextResponse.json({
+    publicUrl: url ? `${url.split("?")[0]}?v=${Date.now()}` : null,
+    saved: Boolean(url),
+    savedAt: data?.updated_at ?? null,
+  })
 }

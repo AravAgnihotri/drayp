@@ -1,4 +1,7 @@
--- Body Lab reference photos: run once in Supabase → SQL Editor → Run
+-- Body Lab storage (per user, persists with their account):
+--   {user_id}/reference.jpg  — full-body photo
+--   {user_id}/avatar.glb     — 3D model (saved after Meshy generation)
+-- Run once in Supabase → SQL Editor → Run
 -- (Or add SUPABASE_SERVICE_ROLE_KEY to .env.local so the app can create the bucket automatically.)
 
 CREATE TABLE IF NOT EXISTS public.body_measurements (
@@ -27,6 +30,10 @@ CREATE POLICY "users_own_measurements" ON public.body_measurements
 
 ALTER TABLE public.body_measurements
   ADD COLUMN IF NOT EXISTS reference_photo_url TEXT;
+ALTER TABLE public.body_measurements
+  ADD COLUMN IF NOT EXISTS meshy_task_id TEXT;
+ALTER TABLE public.body_measurements
+  ADD COLUMN IF NOT EXISTS avatar_model_glb_url TEXT;
 ALTER TABLE public.body_measurements ADD COLUMN IF NOT EXISTS neck_in NUMERIC(5,1);
 ALTER TABLE public.body_measurements ADD COLUMN IF NOT EXISTS sleeve_in NUMERIC(5,1);
 ALTER TABLE public.body_measurements ADD COLUMN IF NOT EXISTS bicep_in NUMERIC(5,1);
@@ -63,3 +70,7 @@ CREATE POLICY "body_photos_delete_own"
     bucket_id = 'body-reference-photos'
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
+
+CREATE POLICY "body_photos_public_read"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'body-reference-photos');

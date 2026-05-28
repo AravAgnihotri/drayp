@@ -62,19 +62,19 @@ export default async function DashboardPage() {
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           label="Total Orders"
-          value={totalOrders ?? 0}
+          value={totalOrders ? totalOrders : "—"}
           sub={(inProgress ?? 0) > 0 ? `${inProgress} in progress` : "No active orders"}
         />
         <StatCard
           label="Saved Items"
-          value={savedCount ?? 0}
+          value={savedCount ? savedCount : "—"}
           sub={(newMatches ?? 0) > 0 ? `${newMatches} new match${newMatches === 1 ? "" : "es"}` : "No new matches"}
         />
         <StatCard
           label="Fit Score Avg"
           value={avgFit !== null ? `${avgFit}%` : "—"}
           sub={avgFit !== null ? "Across all categories" : "No scored orders yet"}
-          valueClassName={avgFit !== null ? "text-[#0F6E56]" : undefined}
+          valueClassName={avgFit !== null ? "text-[#3a70c0]" : undefined}
         />
       </div>
 

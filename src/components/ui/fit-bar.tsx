@@ -15,7 +15,7 @@ export function FitBar({ label, value, className }: FitBarProps) {
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
         <div
-          className="h-full rounded-full bg-[#1D9E75] transition-all duration-500"
+          className="h-full rounded-full bg-[#83aff0] transition-all duration-500"
           style={{ width: `${value}%` }}
         />
       </div>

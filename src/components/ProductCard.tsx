@@ -78,7 +78,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
           href={product.productUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-auto flex items-center justify-center gap-2 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 hover:border-sky-500/40 text-sky-300 hover:text-sky-200 text-[13px] font-medium py-2.5 px-3 transition-all duration-200"
+          className="mt-auto flex items-center justify-center gap-2 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/20 hover:border-brand-500/40 text-brand-300 hover:text-brand-200 text-[13px] font-medium py-2.5 px-3 transition-all duration-200"
         >
           Shop at {product.retailer}
           <ExternalLink className="w-3 h-3" />

@@ -95,11 +95,11 @@ export default async function FitMetricsPage() {
                 <li key={entry.id} className="relative flex items-start gap-4">
                   <div className={cn(
                     "relative z-10 mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border-2 bg-white",
-                    entry.status === "returned" ? "border-gray-300" : "border-[#1D9E75]"
+                    entry.status === "returned" ? "border-gray-300" : "border-[#83aff0]"
                   )}>
                     <div className={cn(
                       "h-1.5 w-1.5 rounded-full",
-                      entry.status === "returned" ? "bg-gray-300" : "bg-[#1D9E75]"
+                      entry.status === "returned" ? "bg-gray-300" : "bg-[#83aff0]"
                     )} />
                   </div>
                   <div className="flex-1 pt-px">
@@ -112,7 +112,7 @@ export default async function FitMetricsPage() {
                           Returned
                         </span>
                       ) : entry.fit_score != null ? (
-                        <span className="flex-shrink-0 font-dm-mono text-sm font-semibold text-[#0F6E56]">
+                        <span className="flex-shrink-0 font-dm-mono text-sm font-semibold text-[#3a70c0]">
                           {entry.fit_score}%
                         </span>
                       ) : null}

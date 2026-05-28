@@ -1,10 +1,16 @@
 import type { Metadata } from 'next';
-import { Inter, DM_Sans, DM_Mono } from 'next/font/google';
+import { Inter, DM_Sans, DM_Mono, Cormorant_Garamond } from 'next/font/google';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-dm-sans', weight: ['400', '500', '600', '700'] });
 const dmMono = DM_Mono({ subsets: ['latin'], variable: '--font-dm-mono', weight: ['400', '500'] });
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  variable: '--font-cormorant',
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+});
 
 export const metadata: Metadata = {
   title: 'Drayp — AI Personal Shopping Assistant',
@@ -20,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${dmSans.variable} ${dmMono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${dmSans.variable} ${dmMono.variable} ${cormorant.variable}`}>
       <body className="antialiased">
         {children}
       </body>

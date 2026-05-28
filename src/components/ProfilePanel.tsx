@@ -39,7 +39,7 @@ function SectionHeader({ icon: Icon, children }: { icon: React.ComponentType<{ c
   return (
     <div className="flex items-center gap-2 mb-3">
       <div className="w-6 h-6 rounded-md bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-        <Icon className="w-3 h-3 text-sky-400" />
+        <Icon className="w-3 h-3 text-brand-400" />
       </div>
       <span className="text-xs font-semibold text-slate-300 tracking-wide">{children}</span>
     </div>
@@ -52,7 +52,7 @@ function InputField({ label, ...props }: { label: string } & React.InputHTMLAttr
       <label className="block text-[11px] text-slate-500 mb-1.5 font-medium">{label}</label>
       <input
         {...props}
-        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-sky-500/40 transition-colors duration-200"
+        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 outline-none focus:border-brand-500/40 transition-colors duration-200"
       />
     </div>
   );
@@ -125,9 +125,9 @@ export default function ProfilePanel({ onClose }: Props) {
     return (
       <div className="flex items-center justify-center h-40">
         <div className="flex gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-sky-400 loading-dot" />
-          <div className="w-2 h-2 rounded-full bg-sky-400 loading-dot" />
-          <div className="w-2 h-2 rounded-full bg-sky-400 loading-dot" />
+          <div className="w-2 h-2 rounded-full bg-brand-400 loading-dot" />
+          <div className="w-2 h-2 rounded-full bg-brand-400 loading-dot" />
+          <div className="w-2 h-2 rounded-full bg-brand-400 loading-dot" />
         </div>
       </div>
     );
@@ -146,7 +146,7 @@ export default function ProfilePanel({ onClose }: Props) {
           value={profile.name ?? ''}
           onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
           placeholder="Your name"
-          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-slate-600 outline-none focus:border-sky-500/40 transition-colors duration-200"
+          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-slate-600 outline-none focus:border-brand-500/40 transition-colors duration-200"
         />
       </section>
 
@@ -188,7 +188,7 @@ export default function ProfilePanel({ onClose }: Props) {
                 onClick={() => toggleStyle(style)}
                 className={`px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-200 capitalize ${
                   active
-                    ? 'bg-sky-500/15 text-sky-300 border border-sky-500/30'
+                    ? 'bg-brand-500/15 text-brand-300 border border-brand-500/30'
                     : 'bg-white/[0.03] text-slate-400 hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] hover:text-slate-300'
                 }`}
               >
@@ -212,7 +212,7 @@ export default function ProfilePanel({ onClose }: Props) {
                 title={name}
                 className={`relative w-8 h-8 rounded-lg transition-all duration-200 ${
                   active
-                    ? 'ring-2 ring-sky-400 ring-offset-2 ring-offset-slate-950 scale-110'
+                    ? 'ring-2 ring-brand-400 ring-offset-2 ring-offset-slate-950 scale-110'
                     : 'ring-1 ring-white/[0.08] hover:ring-white/[0.2] hover:scale-105'
                 }`}
               >
@@ -240,7 +240,7 @@ export default function ProfilePanel({ onClose }: Props) {
                 onClick={() => toggleBrand(brand)}
                 className={`px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-200 ${
                   active
-                    ? 'bg-sky-500/15 text-sky-300 border border-sky-500/30'
+                    ? 'bg-brand-500/15 text-brand-300 border border-brand-500/30'
                     : 'bg-white/[0.03] text-slate-400 hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] hover:text-slate-300'
                 }`}
               >
@@ -285,7 +285,7 @@ export default function ProfilePanel({ onClose }: Props) {
         className={`w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all duration-300 ${
           saved
             ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-            : 'bg-sky-500 hover:bg-sky-400 text-white shadow-lg shadow-sky-500/20 hover:shadow-sky-400/30'
+            : 'bg-brand-500 hover:bg-brand-400 text-white shadow-lg shadow-brand-500/20 hover:shadow-brand-400/30'
         }`}
       >
         {saved ? (

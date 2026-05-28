@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { AccountSidebar } from "@/components/account/AccountSidebar"
 import { createClient } from "@/lib/supabase/server"
 
@@ -19,14 +19,13 @@ export default async function AccountLayout({ children }: { children: React.Reac
       <AccountSidebar />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar */}
-        <header className="flex h-12 flex-shrink-0 items-center border-b border-gray-200 bg-white px-5">
+        <header className="flex h-14 flex-shrink-0 items-center border-b border-gray-200 bg-white px-5">
           <Link
             href="/"
-            className="flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-gray-800"
+            className="group flex items-center gap-2.5 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-600 transition-all hover:border-[#3a70c0]/30 hover:bg-[#eef4fd] hover:text-[#3a70c0] hover:shadow-sm"
           >
-            <ChevronLeft className="h-4 w-4" />
-            Back to Drayp
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            Back to <span className="font-semibold text-[#3a70c0]">Drayp</span>
           </Link>
         </header>
 

@@ -11,10 +11,19 @@ function isValidHttpOrHttpsUrl(url: string): boolean {
   }
 }
 
+function isPlaceholderSupabaseUrl(url: string): boolean {
+  const lower = url.toLowerCase()
+  return (
+    lower.includes("your-project-ref") ||
+    lower.includes("placeholder.supabase") ||
+    lower === "https://supabase.co"
+  )
+}
+
 /** Resolves URL for Supabase clients; falls back when env is missing or invalid. */
 export function getSupabaseUrl(): string {
   const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
-  if (raw && isValidHttpOrHttpsUrl(raw)) return raw
+  if (raw && isValidHttpOrHttpsUrl(raw) && !isPlaceholderSupabaseUrl(raw)) return raw
   return PLACEHOLDER_SUPABASE_URL
 }
 

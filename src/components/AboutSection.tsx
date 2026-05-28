@@ -25,7 +25,7 @@ export default function AboutSection() {
           whileInView="show"
           viewport={{ once: true, amount: 0.4 }}
           variants={fadeUp}
-          className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-500 mb-5"
+          className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-500 mb-5"
         >
           About Drayp
         </motion.p>
@@ -36,10 +36,10 @@ export default function AboutSection() {
           whileInView="show"
           viewport={{ once: true, amount: 0.4 }}
           variants={fadeUp}
-          className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-slate-900 leading-[1.05]"
+          className="drayp-hero-headline font-cormorant font-light text-5xl sm:text-6xl md:text-7xl text-slate-900 leading-[1.05]"
         >
           Shopping, finally{' '}
-          <span className="italic text-sky-500">personal.</span>
+          <em>personal.</em>
         </motion.h2>
 
         <motion.p
@@ -48,7 +48,7 @@ export default function AboutSection() {
           whileInView="show"
           viewport={{ once: true, amount: 0.4 }}
           variants={fadeUp}
-          className="mt-6 text-lg sm:text-xl text-slate-500 leading-relaxed max-w-2xl"
+          className="mt-6 text-lg text-slate-500 leading-relaxed max-w-lg"
         >
           Drayp is an AI-powered shopping agent that finds, fits, and curates
           clothing built around you — not the algorithm.
@@ -66,7 +66,7 @@ export default function AboutSection() {
           viewport={{ once: true, amount: 0.2 }}
           variants={fadeUp}
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-500">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-500">
             Our Story
           </span>
           <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
@@ -105,7 +105,7 @@ export default function AboutSection() {
           viewport={{ once: true, amount: 0.2 }}
           variants={fadeUp}
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-500">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-500">
             What Makes Us Different
           </span>
           <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
@@ -134,7 +134,7 @@ export default function AboutSection() {
           variants={fadeUp}
           className="max-w-2xl"
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-500">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-500">
             Our Belief
           </span>
           <div className="mt-5 flex flex-col gap-4">

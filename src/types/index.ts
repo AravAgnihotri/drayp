@@ -33,6 +33,7 @@ export interface UserProfile {
   name: string;
   email?: string;
   photoUrl?: string;
+  gender?: 'mens' | 'womens' | 'nonbinary';
   measurements: Partial<UserMeasurements>;
   stylePreferences: Partial<StylePreferences>;
   createdAt: string;
@@ -80,6 +81,13 @@ export interface RankedProduct extends Product {
 export interface ShoppingIntent {
   /** True when the user is only greeting, thanking, or small talk — skip product search. */
   conversationOnly?: boolean;
+  /**
+   * True when the query is too vague to return useful results — missing budget,
+   * occasion, or fit preference. The agent will ask clarifyingQuestion instead of searching.
+   */
+  needsClarification?: boolean;
+  /** One or two focused questions to ask the user before searching. */
+  clarifyingQuestion?: string;
   category?: ProductCategory;
   subcategories?: string[];
   colors?: string[];
@@ -92,6 +100,21 @@ export interface ShoppingIntent {
   rawQuery: string;
 }
 
+// ─── Shopping Results (Serper) ────────────────────────────────────────────────
+
+export interface ShoppingResult {
+  id: string;
+  title: string;
+  price: number;
+  priceFormatted: string;
+  source: string;
+  link: string;
+  imageUrl: string;
+  rating?: number;
+  reviewCount?: number;
+  fitScore?: number;
+}
+
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 
 export interface ChatMessage {
@@ -99,6 +122,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   products?: RankedProduct[];
+  shoppingResults?: ShoppingResult[];
   intent?: ShoppingIntent;
   timestamp: string;
 }
@@ -111,5 +135,6 @@ export interface ChatRequest {
 export interface ChatResponse {
   message: string;
   products?: RankedProduct[];
+  shoppingResults?: ShoppingResult[];
   intent?: ShoppingIntent;
 }

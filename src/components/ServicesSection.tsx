@@ -64,7 +64,7 @@ export default function ServicesSection() {
           whileInView="show"
           viewport={{ once: true, amount: 0.4 }}
           variants={fadeUp}
-          className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-500 mb-5"
+          className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-500 mb-5"
         >
           Services
         </motion.p>
@@ -74,7 +74,7 @@ export default function ServicesSection() {
           whileInView="show"
           viewport={{ once: true, amount: 0.4 }}
           variants={fadeUp}
-          className="text-5xl sm:text-6xl font-bold tracking-tight text-slate-900 leading-[1.05] max-w-xl"
+          className="font-cormorant font-light text-5xl sm:text-6xl text-slate-900 leading-[1.05] max-w-xl"
         >
           What Drayp does for you.
         </motion.h2>
@@ -111,9 +111,9 @@ export default function ServicesSection() {
 
               {/* Title + icon */}
               <div className="flex items-start gap-3">
-                <s.icon className="w-4 h-4 text-sky-500 mt-0.5 flex-shrink-0" />
+                <s.icon className="w-4 h-4 text-brand-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-sky-500 mb-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-brand-500 mb-1">
                     {s.title}
                   </p>
                   <h3 className="text-xl font-bold text-slate-900 leading-snug">
@@ -137,11 +137,10 @@ export default function ServicesSection() {
           whileInView="show"
           viewport={{ once: true, amount: 0.4 }}
           variants={fadeUp}
-          className="mt-16 text-2xl sm:text-3xl font-bold text-slate-900 max-w-xl leading-snug border-t border-slate-200 pt-12"
+          className="drayp-hero-headline font-cormorant font-light text-3xl sm:text-4xl text-slate-900 max-w-xl leading-snug border-t border-slate-200/70 pt-12 mt-16"
         >
-          Drayp doesn't just help you shop. It helps you{' '}
-          <span className="italic text-sky-500">stop</span> shopping — and
-          start wearing.
+          Drayp doesn&apos;t just help you shop. It helps you{' '}
+          <em>stop</em> shopping — and start wearing.
         </motion.p>
       </div>
     </section>

@@ -12,6 +12,7 @@ const config: Config = {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         'dm-sans': ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
         'dm-mono': ['var(--font-dm-mono)', 'monospace'],
+        cormorant: ['var(--font-cormorant)', 'Georgia', 'serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -48,11 +49,12 @@ const config: Config = {
           foreground: 'hsl(var(--card-foreground))',
         },
         brand: {
-          primary: '#0F6E56',
-          accent:  '#1D9E75',
-          light:   '#E1F5EE',
-          border:  '#5DCAA5',
-          dark:    '#085041',
+          50:  '#eef4fd',
+          200: '#c3d8f8',
+          300: '#a8c4f4',
+          400: '#83aff0',
+          500: '#5b8fd8',
+          600: '#3a70c0',
         },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
@@ -71,6 +73,7 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       animation: {
+        'spin-slow': 'spin 3s linear infinite',
         'fade-in': 'fadeIn 0.4s ease-out',
         'fade-in-up': 'fadeInUp 0.5s ease-out',
         'fade-in-down': 'fadeInDown 0.3s ease-out',
@@ -110,8 +113,8 @@ const config: Config = {
           '50%': { opacity: '0.5' },
         },
         glowPulse: {
-          '0%, 100%': { boxShadow: '0 0 20px rgba(14, 165, 233, 0.15)' },
-          '50%': { boxShadow: '0 0 40px rgba(14, 165, 233, 0.25)' },
+          '0%, 100%': { boxShadow: '0 0 20px rgba(131, 175, 240, 0.15)' },
+          '50%': { boxShadow: '0 0 40px rgba(131, 175, 240, 0.25)' },
         },
       },
     },

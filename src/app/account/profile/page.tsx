@@ -1,20 +1,31 @@
-"use client"
-
-import { useState } from "react"
-import { Edit2, CheckCircle2 } from "lucide-react"
+import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
-const UNIT_OPTIONS = ["Imperial (in, lb)", "Metric (cm, kg)"]
+function initials(name: string | null | undefined): string {
+  if (!name) return "?"
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("")
+}
 
-export default function ProfilePage() {
-  const [units, setUnits] = useState(UNIT_OPTIONS[0])
-  const [saved, setSaved] = useState(false)
+export default async function ProfilePage() {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
 
-  const handleSave = () => {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
-  }
+  const [{ data: profile }, { data: userProfile }] = await Promise.all([
+    supabase.from("profiles").select("full_name, plan, created_at").eq("id", user.id).maybeSingle(),
+    supabase.from("user_profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
+  ])
+
+  const fullName = userProfile?.full_name ?? profile?.full_name ?? null
+  const plan = profile?.plan ?? "free"
+  const memberSince = profile?.created_at
+    ? new Date(profile.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+    : null
 
   return (
     <div className="p-6 md:p-8">
@@ -24,58 +35,42 @@ export default function ProfilePage() {
       </div>
 
       <div className="max-w-xl space-y-6">
-        {/* Avatar card */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center gap-5">
-            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#1D9E75] to-[#0F6E56] text-xl font-bold text-white">
-              JD
+            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#83aff0] to-[#3a70c0] text-xl font-bold text-white">
+              {initials(fullName)}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">John Doe</h2>
-              <p className="text-sm text-gray-400">Member since January 2024</p>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {fullName ?? <span className="text-gray-400">No name set</span>}
+              </h2>
+              {memberSince && (
+                <p className="text-sm text-gray-400">Member since {memberSince}</p>
+              )}
             </div>
-            <Button variant="outline" size="sm" className="ml-auto gap-1.5 border-gray-200 text-gray-600">
-              <Edit2 className="h-3.5 w-3.5" />
-              Edit
-            </Button>
           </div>
         </div>
 
-        {/* Details card */}
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           <div className="border-b border-gray-100 px-5 py-4">
             <h2 className="text-sm font-semibold text-gray-900">Account Details</h2>
           </div>
           <ul className="divide-y divide-gray-100">
-            {/* Email */}
             <li className="flex items-center justify-between px-5 py-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Email</p>
-                <p className="mt-0.5 text-sm text-gray-800">john.doe@example.com</p>
+                <p className="mt-0.5 text-sm text-gray-800">{user.email}</p>
               </div>
-              <Button variant="ghost" size="sm" className="text-xs text-gray-400 hover:text-gray-600">
-                Change
-              </Button>
             </li>
 
-            {/* Location */}
-            <li className="flex items-center justify-between px-5 py-4">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Location</p>
-                <p className="mt-0.5 text-sm text-gray-800">Calgary, AB</p>
-              </div>
-              <Button variant="ghost" size="sm" className="text-xs text-gray-400 hover:text-gray-600">
-                Change
-              </Button>
-            </li>
-
-            {/* Plan */}
             <li className="flex items-center justify-between px-5 py-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Plan</p>
                 <div className="mt-0.5 flex items-center gap-2">
-                  <p className="text-sm text-gray-800">Drayp Pro</p>
-                  <span className="inline-flex items-center rounded-full bg-[#E1F5EE] px-2 py-0.5 text-[10px] font-semibold text-[#085041]">
+                  <p className="text-sm text-gray-800">
+                    {plan === "pro" ? "Drayp Pro" : "Drayp Free"}
+                  </p>
+                  <span className="inline-flex items-center rounded-full bg-[#e8f1fd] px-2 py-0.5 text-[10px] font-semibold text-[#2d5ca8]">
                     Active
                   </span>
                 </div>
@@ -84,38 +79,8 @@ export default function ProfilePage() {
                 Manage
               </Button>
             </li>
-
-            {/* Units */}
-            <li className="flex items-center justify-between px-5 py-4">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Measurement Units</p>
-                <p className="mt-0.5 text-xs text-gray-400">Used in Body Lab and fit predictions</p>
-              </div>
-              <select
-                value={units}
-                onChange={(e) => setUnits(e.target.value)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D9E75]"
-              >
-                {UNIT_OPTIONS.map((o) => <option key={o}>{o}</option>)}
-              </select>
-            </li>
           </ul>
         </div>
-
-        <div className="flex justify-end">
-          <Button onClick={handleSave} className="bg-[#0F6E56] text-white hover:bg-[#085041]">
-            Save changes
-          </Button>
-        </div>
-      </div>
-
-      {/* Toast */}
-      <div className={cn(
-        "fixed bottom-6 right-6 flex items-center gap-2.5 rounded-lg bg-gray-900 px-4 py-3 text-sm text-white shadow-lg transition-all duration-300",
-        saved ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0 pointer-events-none"
-      )}>
-        <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-[#1D9E75]" />
-        Profile saved successfully
       </div>
     </div>
   )

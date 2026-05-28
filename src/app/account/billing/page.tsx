@@ -1,5 +1,4 @@
-"use client"
-
+import { createClient } from "@/lib/supabase/server"
 import { Check, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -11,7 +10,20 @@ const PLAN_FEATURES = [
   "Sustainability filters",
 ]
 
-export default function BillingPage() {
+export default async function BillingPage() {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("plan")
+    .eq("id", user.id)
+    .maybeSingle()
+
+  const plan = profile?.plan ?? "free"
+  const isPro = plan === "pro"
+
   return (
     <div className="p-6 md:p-8">
       <div className="mb-8">
@@ -20,48 +32,59 @@ export default function BillingPage() {
       </div>
 
       <div className="max-w-xl space-y-6">
-        {/* Current plan */}
-        <div className="rounded-xl border border-[#5DCAA5] bg-white shadow-sm overflow-hidden">
-          <div className="border-b border-gray-100 bg-[#E1F5EE] px-5 py-4">
+        <div className={`rounded-xl border shadow-sm overflow-hidden ${isPro ? "border-[#a8c4f4]" : "border-gray-200"} bg-white`}>
+          <div className={`border-b border-gray-100 px-5 py-4 ${isPro ? "bg-[#e8f1fd]" : "bg-gray-50"}`}>
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-[#0F6E56]">Drayp Pro</h2>
-                <p className="mt-0.5 text-xs text-[#1D9E75]">Your current plan</p>
+                <h2 className={`text-sm font-semibold ${isPro ? "text-[#3a70c0]" : "text-gray-700"}`}>
+                  {isPro ? "Drayp Pro" : "Drayp Free"}
+                </h2>
+                <p className={`mt-0.5 text-xs ${isPro ? "text-[#83aff0]" : "text-gray-400"}`}>
+                  Your current plan
+                </p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-[#0F6E56] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+              <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white ${isPro ? "bg-[#3a70c0]" : "bg-gray-400"}`}>
                 Active
               </span>
             </div>
           </div>
 
           <div className="px-5 py-5">
-            <ul className="space-y-2.5 mb-5">
-              {PLAN_FEATURES.map((feat) => (
-                <li key={feat} className="flex items-center gap-2.5 text-sm text-gray-700">
-                  <div className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#E1F5EE]">
-                    <Check className="h-2.5 w-2.5 text-[#0F6E56]" />
+            {isPro ? (
+              <>
+                <ul className="space-y-2.5 mb-5">
+                  {PLAN_FEATURES.map((feat) => (
+                    <li key={feat} className="flex items-center gap-2.5 text-sm text-gray-700">
+                      <div className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#e8f1fd]">
+                        <Check className="h-2.5 w-2.5 text-[#3a70c0]" />
+                      </div>
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex items-end justify-between border-t border-gray-100 pt-4">
+                  <div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="font-dm-mono text-3xl font-bold text-gray-900">$14</span>
+                      <span className="text-sm text-gray-400">/month</span>
+                    </div>
                   </div>
-                  {feat}
-                </li>
-              ))}
-            </ul>
-
-            <div className="flex items-end justify-between border-t border-gray-100 pt-4">
-              <div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-dm-mono text-3xl font-bold text-gray-900">$14</span>
-                  <span className="text-sm text-gray-400">/month</span>
+                  <Button variant="outline" size="sm" className="border-gray-200 text-gray-600 text-xs">
+                    Change plan
+                  </Button>
                 </div>
-                <p className="mt-0.5 text-xs text-gray-400">Next billing date: May 1, 2025</p>
+              </>
+            ) : (
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-500">Upgrade to Pro to unlock all features.</p>
+                <Button size="sm" className="bg-[#3a70c0] text-white hover:bg-[#2d5ca8] text-xs">
+                  Upgrade
+                </Button>
               </div>
-              <Button variant="outline" size="sm" className="border-gray-200 text-gray-600 text-xs">
-                Change plan
-              </Button>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Payment method */}
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="border-b border-gray-100 px-5 py-4">
             <h2 className="text-sm font-semibold text-gray-900">Payment Method</h2>
@@ -69,22 +92,16 @@ export default function BillingPage() {
           <div className="flex items-center justify-between px-5 py-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-14 items-center justify-center rounded-lg border border-gray-200 bg-gray-50">
-                <CreditCard className="h-5 w-5 text-gray-500" />
+                <CreditCard className="h-5 w-5 text-gray-400" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-800">
-                  Visa ending in <span className="font-dm-mono">4242</span>
-                </p>
-                <p className="mt-0.5 text-xs text-gray-400">Expires 09 / 27</p>
-              </div>
+              <p className="text-sm text-gray-400">No payment method on file</p>
             </div>
             <Button variant="outline" size="sm" className="border-gray-200 text-gray-600 text-xs">
-              Replace
+              Add
             </Button>
           </div>
         </div>
 
-        {/* Danger zone */}
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="border-b border-gray-100 px-5 py-4">
             <h2 className="text-sm font-semibold text-gray-900">Danger Zone</h2>
@@ -92,7 +109,7 @@ export default function BillingPage() {
           <div className="flex items-center justify-between px-5 py-4">
             <div>
               <p className="text-sm font-medium text-gray-800">Cancel subscription</p>
-              <p className="mt-0.5 text-xs text-gray-400">You'll keep access until the end of your billing period</p>
+              <p className="mt-0.5 text-xs text-gray-400">You&apos;ll keep access until the end of your billing period</p>
             </div>
             <Button
               variant="outline"

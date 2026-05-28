@@ -107,13 +107,47 @@ ${name ? `The user's first name is ${name}; you may use it once if it feels natu
   return "Hey! When you're ready to shop or compare fits, just say what you need.";
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * When the user replies with a short message (e.g. "no", "any", "doesn't matter")
+ * after the agent asked a clarifying question, we need the ORIGINAL shopping query —
+ * not "no" — so Serper/catalog searches get the right keywords.
+ */
+function recoverOriginalQuery(
+  currentMessage: string,
+  history: Array<{ role: 'user' | 'assistant'; content: string }>,
+): string {
+  const isVague = currentMessage.trim().split(/\s+/).length <= 5;
+  if (!isVague) return currentMessage;
+
+  // Walk backwards through history to find the last substantial user shopping message
+  for (let i = history.length - 1; i >= 0; i--) {
+    const m = history[i];
+    if (m.role === 'user' && m.content.trim().split(/\s+/).length > 4) {
+      return m.content.trim();
+    }
+  }
+  return currentMessage;
+}
+
 // ─── Intent extraction ────────────────────────────────────────────────────────
 
 /** Extract structured shopping intent from the user message. */
 async function extractIntent(
   message: string,
   history: Array<{ role: 'user' | 'assistant'; content: string }>,
+  profile: Partial<UserProfile>,
 ): Promise<ShoppingIntent> {
+  const prefs = profile.stylePreferences ?? {};
+  const profileContext = [
+    profile.gender               ? `gender: ${profile.gender}`                        : '',
+    prefs.styles?.length        ? `styles: ${prefs.styles.join(', ')}`               : '',
+    prefs.favoriteColors?.length ? `colors: ${prefs.favoriteColors.join(', ')}`      : '',
+    prefs.favoriteBrands?.length ? `brands: ${prefs.favoriteBrands.join(', ')}`      : '',
+    prefs.priceMax               ? `budget up to $${prefs.priceMax}`                  : '',
+  ].filter(Boolean).join('; ');
+
   const systemPrompt = `You are a structured intent extractor for a fashion shopping assistant.
 Given a user message, output a JSON object with these fields:
 
@@ -121,7 +155,25 @@ Given a user message, output a JSON object with these fields:
   Set to true if the user is ONLY greeting, thanking, saying goodbye, brief small talk, OR asking what you can do / who you are — with NO intent to search for, buy, or browse clothing right now.
   Set to false if they mention clothing, shoes, outfits, fit, sizes, budget, brands, occasions (work, gym, date, etc.), or ask to find/show/recommend/compare products.
 
-When conversationOnly is true, omit or ignore shopping fields below. When false, fill what applies:
+- needsClarification: boolean
+  Set to true ONLY when ALL of the following conditions are met:
+    1. ALL three of these are missing from both the message AND conversation history AND user profile:
+         • price range or budget
+         • occasion or use-case (e.g. work, gym, date night, casual)
+         • fit preference or style
+    2. The user has NOT already declined to provide this info. Treat any of these as a decline:
+         "no budget", "no occasion", "no preference", "doesn't matter", "any", "no", "nope", "idc", "don't care", "not sure", "just browse", "anything"
+    3. The previous assistant message was NOT already a clarifying question about the same topic.
+       Never ask a clarifying question twice in a row — if the user answered (even with "no"), proceed to search.
+  User profile already knows: ${profileContext || 'nothing yet'}.
+
+- clarifyingQuestion: string (only when needsClarification is true)
+  One natural sentence asking 1–2 of the most important missing details.
+  Examples: "What's your budget, and is this for a specific occasion?"
+            "Are you going for a casual or more polished look, and do you have a price range in mind?"
+  Keep it concise — do not ask more than two things at once.
+
+When conversationOnly is true, omit shopping fields. When false, fill what applies:
 - category: one of "tops" | "bottoms" | "shoes" | "outerwear" | "accessories"
 - subcategories: string[] (e.g. ["t-shirt","shirt"])
 - colors: string[] (e.g. ["navy","white"])
@@ -132,9 +184,13 @@ When conversationOnly is true, omit or ignore shopping fields below. When false,
 - brands: string[] (e.g. ["Nike","Adidas"])
 - keywords: string[] (extra search keywords)
 
+IMPORTANT: If the current message is very short (1–5 words) like "no", "yes", "ok", "any", "doesn't matter",
+look at the FULL conversation history to extract shopping fields. The user's intent is still the original
+shopping request — extract category, keywords, brands etc from the history, not from the short reply.
+
 Output ONLY valid JSON with no explanation.`;
 
-  const recent = history.slice(-4).map(m => ({
+  const recent = history.slice(-6).map(m => ({
     role: m.role as 'user' | 'assistant',
     content: m.content,
   }));
@@ -154,7 +210,7 @@ Output ONLY valid JSON with no explanation.`;
   try {
     const response = await client.chat.completions.create({
       model: 'gpt-4o-mini',
-      max_tokens: 256,
+      max_tokens: 300,
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: systemPrompt },
@@ -166,13 +222,16 @@ Output ONLY valid JSON with no explanation.`;
     const text = response.choices[0].message.content ?? '{}';
     const parsed = JSON.parse(text) as Partial<ShoppingIntent>;
     const conversationOnly = parsed.conversationOnly === true;
-    return { ...parsed, conversationOnly, rawQuery: message };
+    const needsClarification = !conversationOnly && parsed.needsClarification === true;
+    // Use the original shopping query from history when the current message is a vague follow-up
+    const rawQuery = conversationOnly ? message : recoverOriginalQuery(message, history);
+    return { ...parsed, conversationOnly, needsClarification, rawQuery };
   } catch (err) {
     logOpenAiFailure('extractIntent', err);
     const conversationOnly = isConversationOnlyFallback(message);
     return {
       conversationOnly,
-      rawQuery: message,
+      rawQuery: conversationOnly ? message : recoverOriginalQuery(message, history),
       keywords: conversationOnly
         ? []
         : message.split(/\s+/).filter(w => w.length > 3),
@@ -287,6 +346,7 @@ Rank these products and generate personalised reasons for the top ones. Include 
 function buildProfileSummary(profile: Partial<UserProfile>): string {
   const lines: string[] = [];
   if (profile.name) lines.push(`Name: ${profile.name}`);
+  if (profile.gender) lines.push(`Shopping for: ${profile.gender === 'mens' ? "men's" : profile.gender === 'womens' ? "women's" : 'non-binary'} clothing`);
 
   const prefs = profile.stylePreferences ?? {};
   if (prefs.favoriteBrands?.length)  lines.push(`Favourite brands: ${prefs.favoriteBrands.join(', ')}`);
@@ -314,17 +374,35 @@ export interface AgentResult {
   intent?: ShoppingIntent;
 }
 
+/** True when the last assistant message was itself a clarifying question. */
+function lastTurnWasClarification(
+  history: Array<{ role: 'user' | 'assistant'; content: string }>,
+): boolean {
+  const lastAssistant = [...history].reverse().find(m => m.role === 'assistant');
+  if (!lastAssistant) return false;
+  const t = lastAssistant.content.trim();
+  // Heuristic: ends with "?" and is short (typical clarifying question)
+  return t.endsWith('?') && t.length < 300;
+}
+
 export async function processShoppingQuery(
   message: string,
   profile: Partial<UserProfile>,
   history: Array<{ role: 'user' | 'assistant'; content: string }>,
 ): Promise<AgentResult> {
-  // 1. Extract intent
-  const intent = await extractIntent(message, history);
+  // 1. Extract intent (profile passed so we don't ask about things we already know)
+  const intent = await extractIntent(message, history, profile);
 
   if (intent.conversationOnly) {
     const text = await replyConversationOnly(message, profile, history);
     return { text, intent };
+  }
+
+  // 2. Ask clarifying question only if truly needed AND we haven't already asked one
+  //    Hard guard: if last assistant turn was already a question, skip and search.
+  const alreadyAsked = lastTurnWasClarification(history);
+  if (intent.needsClarification && intent.clarifyingQuestion && !alreadyAsked) {
+    return { text: intent.clarifyingQuestion, intent };
   }
 
   // 2. Search catalog

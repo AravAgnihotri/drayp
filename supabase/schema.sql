@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS body_measurements (
   shoe_size_us NUMERIC(4,1),
   height_text  TEXT,
   reference_photo_url TEXT,
+  meshy_task_id TEXT,
+  avatar_model_glb_url TEXT,
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -58,6 +60,8 @@ CREATE POLICY "users_own_measurements" ON body_measurements
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 ALTER TABLE public.body_measurements ADD COLUMN IF NOT EXISTS reference_photo_url TEXT;
+ALTER TABLE public.body_measurements ADD COLUMN IF NOT EXISTS meshy_task_id TEXT;
+ALTER TABLE public.body_measurements ADD COLUMN IF NOT EXISTS avatar_model_glb_url TEXT;
 ALTER TABLE public.body_measurements ADD COLUMN IF NOT EXISTS neck_in NUMERIC(5,1);
 ALTER TABLE public.body_measurements ADD COLUMN IF NOT EXISTS sleeve_in NUMERIC(5,1);
 ALTER TABLE public.body_measurements ADD COLUMN IF NOT EXISTS bicep_in NUMERIC(5,1);
@@ -91,6 +95,10 @@ CREATE POLICY "body_photos_delete_own"
     bucket_id = 'body-reference-photos'
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
+
+CREATE POLICY "body_photos_public_read"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'body-reference-photos');
 
 -- ── Profiles (if not already created) ────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS profiles (

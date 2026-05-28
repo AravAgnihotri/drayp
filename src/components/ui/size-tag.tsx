@@ -15,7 +15,7 @@ export function SizeTag({ label, selected = false, onClick }: SizeTagProps) {
       className={cn(
         "inline-flex h-8 min-w-[2.25rem] items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors",
         selected
-          ? "border-[#0F6E56] bg-[#E1F5EE] text-[#0F6E56]"
+          ? "border-[#3a70c0] bg-[#e8f1fd] text-[#3a70c0]"
           : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-800"
       )}
     >

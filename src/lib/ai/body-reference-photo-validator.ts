@@ -7,16 +7,17 @@ export type BodyReferencePhotoValidation =
   | { ok: true }
   | { ok: false; httpStatus: 400 | 503; message: string }
 
-const SYSTEM = `You are a strict reviewer for a body-measurement / fit app.
+const SYSTEM = `You are a photo reviewer for a body-measurement / fit app.
 You must respond with a single JSON object only (no markdown), using this exact shape:
 {"accept":boolean,"code":"full_body"|"not_full_body"|"no_clear_human"|"multiple_people"|"other","brief":"short user-facing reason if accept is false"}
 
-Set accept to true only if ALL are true:
-- One clearly visible adult human (reject drawings, heavy filters that erase body edges, or ambiguous CGI unless clearly a normal photograph).
-- True full-body framing: top of head (or hair) through both feet/shoes visible in frame; reject if feet, ankles, or head are cropped out, or if the body is mostly off-screen.
-- Standing or neutral upright pose so height and proportions can be estimated (reject lying down, seated shots where legs are hidden, extreme perspective that hides true proportions, or heavy occlusion of torso/arms/legs).
+Set accept to true when:
+- At least one clearly visible human is present (photos, selfies, and mirror shots all count).
+- Enough of the body is visible to estimate clothing size — most of the torso plus at least one limb visible. Slight head or foot cropping is fine.
+- The image is usable (not pitch black, completely blurred, or a non-photo like a screenshot or drawing).
 
-Set accept to false for: face-only, selfie arms dominating with no body context, mirror selfies that crop feet, multiple people, crowd shots, animals, text/screenshots, very dark unusable images, or when you are not confident it is a usable full-body reference.`
+Only set accept to false for clear-cut failures: face-only close-ups with no body, multiple people making it ambiguous which to measure, crowds, animals, non-photograph images (drawings, screenshots, text), or images so dark/blurry that no body shape is discernible.
+When in doubt, accept the image — the measurement estimator can handle partial views.`
 
 export async function validateFullBodyReferencePhoto(input: {
   buffer: Buffer

@@ -24,18 +24,18 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Sticky header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between px-5 h-14 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-500/25">
+      <header className="sticky top-0 z-40 flex items-center justify-between px-6 h-14 border-b border-slate-200/70 bg-white/90 backdrop-blur-md">
+        <div className="flex items-center gap-2.5">
+          <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-md shadow-brand-500/20">
             <ShoppingBag className="w-4 h-4 text-white" />
           </div>
-          <span className="text-[15px] font-semibold tracking-tight text-slate-900">Drayp</span>
+          <span className="font-cormorant text-xl font-semibold italic tracking-tight text-slate-900 leading-none">Drayp</span>
         </div>
         <NavHeader />
       </header>
 
-      {/* Home / Chat — full viewport height minus header */}
-      <section id="home" className="h-[calc(100vh-3.5rem)] bg-grid">
+      {/* Home / Chat — full viewport height minus header, overflow-hidden so the window never scrolls through the chat */}
+      <section id="home" className="h-[calc(100vh-3.5rem)] bg-grid overflow-hidden">
         <ChatInterface />
       </section>
 
@@ -47,26 +47,46 @@ export default function Home() {
 
       <footer
         id="contact"
-        className="border-t border-slate-200 bg-white px-6 py-10"
+        className="border-t border-slate-200/70 bg-white px-6 py-14"
       >
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <p className="text-sm text-slate-500">
-            Questions or partnerships? Reach us on LinkedIn.
-          </p>
-          <Button
-            asChild
-            size="icon"
-            className="h-11 w-11 shrink-0 rounded-md border-0 bg-[#0A66C2] text-white shadow-sm hover:bg-[#004182] focus-visible:ring-[#0A66C2]"
-          >
-            <a
-              href="https://www.linkedin.com/company/a2a-labs/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Drayp on LinkedIn"
-            >
-              <LinkedInLogo className="h-6 w-6" />
-            </a>
-          </Button>
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-10">
+            {/* Brand column */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-sm">
+                  <ShoppingBag className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="font-cormorant text-lg font-semibold italic tracking-tight text-slate-900 leading-none">Drayp</span>
+              </div>
+              <p className="text-sm text-slate-500 max-w-xs leading-relaxed">
+                AI-powered personal shopping that finds, fits, and curates clothing built around you — not the algorithm.
+              </p>
+              <p className="text-xs text-slate-400 mt-1">© {new Date().getFullYear()} Drayp. All rights reserved.</p>
+            </div>
+
+            {/* Connect column */}
+            <div className="flex flex-col gap-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Connect</p>
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-slate-500">Questions or partnerships?</p>
+                <Button
+                  asChild
+                  size="icon"
+                  className="h-9 w-9 shrink-0 rounded-lg border-0 bg-[#0A66C2] text-white shadow-sm hover:bg-[#004182] focus-visible:ring-[#0A66C2]"
+                >
+                  <a
+                    href="https://www.linkedin.com/company/a2a-labs/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Drayp on LinkedIn"
+                  >
+                    <LinkedInLogo className="h-5 w-5" />
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

@@ -23,19 +23,19 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "Navigation",
     items: [
-      { label: "Dashboard",   icon: LayoutGrid,        href: "/dashboard" },
-      { label: "Body Lab",    icon: UserRound,         href: "/body-lab",    badge: "New" },
-      { label: "Fit Metrics", icon: BarChart3,         href: "/fit-metrics" },
-      { label: "My Orders",   icon: Package,           href: "/orders" },
-      { label: "Saved Items", icon: Bookmark,          href: "/saved",       badge: "4" },
+      { label: "Dashboard",   icon: LayoutGrid,        href: "/account/dashboard" },
+      { label: "Body Lab",    icon: UserRound,         href: "/account/body-lab",    badge: "New" },
+      { label: "Fit Metrics", icon: BarChart3,         href: "/account/fit-metrics" },
+      { label: "My Orders",   icon: Package,           href: "/account/orders" },
+      { label: "Saved Items", icon: Bookmark,          href: "/account/saved" },
     ],
   },
   {
     label: "Account",
     items: [
-      { label: "Preferences", icon: SlidersHorizontal, href: "/preferences" },
-      { label: "Profile",     icon: User,              href: "/profile" },
-      { label: "Billing",     icon: CreditCard,        href: "/billing" },
+      { label: "Preferences", icon: SlidersHorizontal, href: "/account/preferences" },
+      { label: "Profile",     icon: User,              href: "/account/profile" },
+      { label: "Billing",     icon: CreditCard,        href: "/account/billing" },
     ],
   },
 ]
@@ -102,7 +102,7 @@ export function AccountSidebar() {
         )}
       >
         <Link href="/" className="flex min-w-0 items-center gap-2.5">
-          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#1D9E75] to-[#0F6E56] text-white shadow-sm">
+          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#83aff0] to-[#3a70c0] text-white shadow-sm">
             <ShoppingBag className="h-3.5 w-3.5" />
           </div>
           {!collapsed && (
@@ -150,12 +150,12 @@ export function AccountSidebar() {
                       className={cn(
                         "flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors",
                         active
-                          ? "bg-[#E1F5EE] text-[#0F6E56]"
+                          ? "bg-[#e8f1fd] text-[#3a70c0]"
                           : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
                         collapsed && "justify-center"
                       )}
                     >
-                      <Icon className={cn("h-4 w-4 flex-shrink-0", active && "text-[#0F6E56]")} />
+                      <Icon className={cn("h-4 w-4 flex-shrink-0", active && "text-[#3a70c0]")} />
                       {!collapsed && (
                         <>
                           <span className="flex-1 truncate">{item.label}</span>
@@ -164,7 +164,7 @@ export function AccountSidebar() {
                               className={cn(
                                 "ml-auto inline-flex h-4 items-center rounded-full px-1.5 text-[10px] font-semibold",
                                 item.badge === "New"
-                                  ? "bg-[#1D9E75] text-white"
+                                  ? "bg-[#5b8fd8] text-white"
                                   : "bg-gray-100 text-gray-600"
                               )}
                             >
@@ -186,7 +186,7 @@ export function AccountSidebar() {
       <div className="flex-shrink-0 border-t border-gray-100 p-3">
         <div className={cn("flex items-center gap-2.5", collapsed && "justify-center")}>
           {/* Avatar */}
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#1D9E75] to-[#0F6E56] text-xs font-semibold text-white">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#83aff0] to-[#3a70c0] text-xs font-semibold text-white">
             {userDisplay.initials}
           </div>
 

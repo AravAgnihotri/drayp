@@ -41,7 +41,7 @@ function NavHeader() {
 
   return (
     <ul
-      className="relative flex w-fit rounded-full border-2 border-black bg-white p-1"
+      className="relative flex w-fit rounded-full border border-slate-200 bg-white/95 shadow-sm backdrop-blur-sm p-1"
       onMouseLeave={() => setPosition((pv) => ({ ...pv, opacity: 0 }))}
     >
       {TABS.map((tab) => (
@@ -75,7 +75,7 @@ const Tab = ({
         const { width } = ref.current.getBoundingClientRect();
         setPosition({ width, opacity: 1, left: ref.current.offsetLeft });
       }}
-      className="relative z-10 block cursor-pointer px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-white mix-blend-difference"
+      className="relative z-10 block cursor-pointer px-3.5 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white mix-blend-difference select-none"
     >
       {children}
     </li>
@@ -87,7 +87,7 @@ const Cursor = ({ position }: { position: Position }) => {
     <motion.li
       animate={position}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="absolute z-0 h-6 rounded-full bg-black"
+      className="absolute z-0 h-[30px] rounded-full bg-slate-900"
     />
   );
 };
