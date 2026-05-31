@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ChatMessage, ChatResponse } from '@/types';
-import ProductGrid from './ProductGrid';
 import ShoppingResults from './shopping/ShoppingResults';
 import { createClient } from '@/lib/supabase/client';
 
@@ -116,7 +115,6 @@ export default function ChatInterface() {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: 'error' in data ? (data as { error: string }).error : data.message,
-        products: 'products' in data ? data.products : undefined,
         shoppingResults: 'shoppingResults' in data ? data.shoppingResults : undefined,
         intent: 'intent' in data ? data.intent : undefined,
         timestamp: new Date().toISOString(),
@@ -262,11 +260,6 @@ export default function ChatInterface() {
                           <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-md px-4 py-3 text-[14px] text-slate-700 leading-relaxed shadow-sm">
                             <MessageContent text={msg.content} />
                           </div>
-                          {msg.products && msg.products.length > 0 && (
-                            <div className="mt-4">
-                              <ProductGrid products={msg.products} />
-                            </div>
-                          )}
                           {msg.shoppingResults && msg.shoppingResults.length > 0 && (
                             <div className="mt-4">
                               <ShoppingResults

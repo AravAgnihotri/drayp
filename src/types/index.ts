@@ -44,38 +44,6 @@ export interface UserProfile {
 
 export type ProductCategory = 'tops' | 'bottoms' | 'shoes' | 'outerwear' | 'accessories';
 
-export interface Product {
-  id: string;
-  title: string;
-  brand: string;
-  price: number;
-  originalPrice?: number;
-  imageUrl: string;
-  productUrl: string;
-  retailer: string;
-  colors: string[];
-  /** Available sizes, e.g. ['XS','S','M','L','XL'] or ['28','30','32','34'] */
-  sizes: string[];
-  category: ProductCategory;
-  subcategory: string;
-  /** Style tags for semantic matching */
-  styles: StyleTag[];
-  rating?: number;
-  reviewCount?: number;
-  description?: string;
-}
-
-export type FitLabel = 'Excellent' | 'Good' | 'Average' | 'Poor' | 'N/A';
-
-export interface RankedProduct extends Product {
-  fitScore: number;
-  fitLabel: FitLabel;
-  /** One-sentence personalised reason for this pick */
-  reason: string;
-  /** Internal relevance score used for sorting (not displayed) */
-  relevanceScore: number;
-}
-
 // ─── Shopping Intent ──────────────────────────────────────────────────────────
 
 export interface ShoppingIntent {
@@ -121,7 +89,6 @@ export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  products?: RankedProduct[];
   shoppingResults?: ShoppingResult[];
   intent?: ShoppingIntent;
   timestamp: string;
@@ -134,7 +101,6 @@ export interface ChatRequest {
 
 export interface ChatResponse {
   message: string;
-  products?: RankedProduct[];
   shoppingResults?: ShoppingResult[];
   intent?: ShoppingIntent;
 }

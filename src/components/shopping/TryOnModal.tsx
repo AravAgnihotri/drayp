@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { X, Download, Sparkles, ArrowRight, RotateCcw, Maximize2, Minimize2 } from 'lucide-react';
+import { X, Download, Sparkles, ArrowRight, RotateCcw, Maximize2, Minimize2, Zap } from 'lucide-react';
 import type { ShoppingResult } from '@/types';
 import { createClient } from '@/lib/supabase/client';
 import AvatarModelViewer from '@/components/AvatarModelViewer';
@@ -39,6 +39,7 @@ export default function TryOnModal({ result, onClose }: Props) {
   const [meshyProgress, setMeshyProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [credits, setCredits] = useState<number | null>(null);
   const modelContainerRef = useRef<HTMLDivElement>(null);
 
   // Proxy URL so model-viewer never hits Meshy CDN directly (avoids CORS)
@@ -75,6 +76,11 @@ export default function TryOnModal({ result, onClose }: Props) {
         });
     });
 
+    fetch('/api/credits')
+      .then(r => r.json())
+      .then(({ credits: c }) => { if (typeof c === 'number') setCredits(c); })
+      .catch(() => {});
+
     fetch('/api/product-image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -88,6 +94,11 @@ export default function TryOnModal({ result, onClose }: Props) {
   const handleGenerate = async () => {
     if (!userPhotoUrl) {
       setErrorMessage('Upload a reference photo in Body Lab first.');
+      return;
+    }
+
+    if (credits !== null && credits < 100) {
+      setErrorMessage('Not enough credits. You need 100 credits per try-on.');
       return;
     }
 
@@ -110,6 +121,12 @@ export default function TryOnModal({ result, onClose }: Props) {
       });
       const genData = await genRes.json();
       if (!genRes.ok) throw new Error(genData.error ?? 'Try-on generation failed');
+
+      // Refresh credit balance after successful deduction
+      fetch('/api/credits')
+        .then(r => r.json())
+        .then(({ credits: c }) => { if (typeof c === 'number') setCredits(c); })
+        .catch(() => {});
 
       const { tryOnImageBase64, tryOnImageUrl, meshyTaskId: taskId } = genData as {
         tryOnImageBase64: string;
@@ -176,13 +193,25 @@ export default function TryOnModal({ result, onClose }: Props) {
             </div>
             <h2 className="text-sm font-semibold text-white tracking-tight">Virtual Try-On</h2>
           </div>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors"
-          >
-            <X className="w-3.5 h-3.5 text-slate-400" />
-          </button>
+          <div className="flex items-center gap-2">
+            {credits !== null && (
+              <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                credits < 100
+                  ? 'bg-red-500/10 border-red-500/25 text-red-400'
+                  : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+              }`}>
+                <Zap className="w-3 h-3" />
+                {credits} credits
+              </div>
+            )}
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors"
+            >
+              <X className="w-3.5 h-3.5 text-slate-400" />
+            </button>
+          </div>
         </div>
 
         <div className="p-5 flex flex-col gap-4">
@@ -217,12 +246,24 @@ export default function TryOnModal({ result, onClose }: Props) {
 
               <button
                 onClick={handleGenerate}
-                disabled={!userPhotoUrl}
+                disabled={!userPhotoUrl || (credits !== null && credits < 100)}
                 className="w-full flex items-center justify-center gap-2 rounded-xl bg-violet-500 hover:bg-violet-400 disabled:bg-white/[0.06] disabled:text-slate-500 text-white text-sm font-semibold py-3 transition-all shadow-lg shadow-violet-500/20 disabled:shadow-none"
               >
                 <Sparkles className="w-4 h-4" />
                 Generate Try-On
+                <span className={`ml-auto flex items-center gap-0.5 text-[11px] font-medium opacity-70 ${
+                  credits !== null && credits < 100 ? 'text-red-400 opacity-100' : ''
+                }`}>
+                  <Zap className="w-3 h-3" />
+                  100
+                </span>
               </button>
+
+              {credits !== null && credits < 100 && (
+                <p className="text-[11px] text-center text-red-400/80">
+                  You need 100 credits to generate a try-on.
+                </p>
+              )}
 
               {errorMessage && (
                 <p className="text-[12px] text-red-400 bg-red-500/10 rounded-xl px-4 py-2.5 border border-red-500/15">

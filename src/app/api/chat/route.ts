@@ -91,45 +91,65 @@ export async function POST(req: NextRequest) {
 
     const result = await processShoppingQuery(message, profile, history);
 
-    const response: ChatResponse = {
-      message: result.text,
-      products: result.products,
-      intent: result.intent,
-    };
-
-    // When there's a shopping intent and Serper is configured, augment with live results
-    if (!result.intent?.conversationOnly && !result.intent?.needsClarification && process.env.SERPER_API_KEY) {
-      const query = buildSerperQuery(result.intent?.rawQuery ?? message, result.intent, profile.gender);
-      console.log('[chat] intent:', JSON.stringify({ conversationOnly: result.intent?.conversationOnly, maxPrice: result.intent?.maxPrice, minPrice: result.intent?.minPrice, gender: profile.gender }));
-      try {
-        const shoppingResults = await searchSerperShopping(query, {
-          minPrice: result.intent?.minPrice,
-          maxPrice: result.intent?.maxPrice,
-        });
-        console.log('[chat] shoppingResults after filter/price:', shoppingResults.length);
-        if (shoppingResults.length > 0) {
-          const withFit = shoppingResults.map(r => ({
-            ...r,
-            fitScore: estimateFitScoreFromTitle(r.title, profile.measurements),
-          }));
-          const reranked = await rerankByEmbeddings(
-            withFit,
-            query,
-            profile.stylePreferences as { favoriteColors?: string[]; favoriteBrands?: string[]; styles?: string[] },
-          );
-          console.log('[chat] reranked:', reranked.length, '→ setting shoppingResults on response');
-          response.shoppingResults = reranked.slice(0, 6);
-          // Serper has live results — suppress the catalog fallback products and
-          // replace the catalog-based AI message with a Serper-aware intro.
-          response.products = undefined;
-          response.message = buildSerperIntro(message, reranked.length);
-        }
-      } catch (err) {
-        console.error('[chat] Serper shopping search failed, falling back to catalog:', err instanceof Error ? err.message : err);
-      }
+    // Conversation-only or clarification — return immediately, no product search
+    if (result.intent?.conversationOnly || result.intent?.needsClarification || !result.intent) {
+      return NextResponse.json({ message: result.text, intent: result.intent } satisfies ChatResponse);
     }
 
-    return NextResponse.json(response);
+    // Shopping query — Serper is the only source of products
+    if (!process.env.SERPER_API_KEY) {
+      return NextResponse.json({
+        message: "Live product search isn't set up yet — ask your admin to add the SERPER_API_KEY environment variable.",
+        intent: result.intent,
+      } satisfies ChatResponse);
+    }
+
+    const query = buildSerperQuery(result.intent.rawQuery ?? message, result.intent, profile.gender);
+    console.log('[chat] intent:', JSON.stringify({
+      conversationOnly: result.intent.conversationOnly,
+      maxPrice: result.intent.maxPrice,
+      minPrice: result.intent.minPrice,
+      gender: profile.gender,
+    }));
+
+    try {
+      const shoppingResults = await searchSerperShopping(query, {
+        minPrice: result.intent.minPrice,
+        maxPrice: result.intent.maxPrice,
+      });
+      console.log('[chat] shoppingResults after filter/price:', shoppingResults.length);
+
+      if (shoppingResults.length === 0) {
+        return NextResponse.json({
+          message: "I searched but couldn't find products matching that description. Try broadening your search — different keywords, a higher budget, or a different category.",
+          intent: result.intent,
+        } satisfies ChatResponse);
+      }
+
+      const withFit = shoppingResults.map(r => ({
+        ...r,
+        fitScore: estimateFitScoreFromTitle(r.title, profile.measurements),
+      }));
+
+      const reranked = await rerankByEmbeddings(
+        withFit,
+        query,
+        profile.stylePreferences as { favoriteColors?: string[]; favoriteBrands?: string[]; styles?: string[] },
+      );
+      console.log('[chat] reranked:', reranked.length);
+
+      return NextResponse.json({
+        message: buildSerperIntro(message, reranked.length),
+        shoppingResults: reranked.slice(0, 6),
+        intent: result.intent,
+      } satisfies ChatResponse);
+    } catch (err) {
+      console.error('[chat] Serper search failed:', err instanceof Error ? err.message : err);
+      return NextResponse.json({
+        message: "Something went wrong while searching for products. Please try again.",
+        intent: result.intent,
+      } satisfies ChatResponse);
+    }
   } catch (err) {
     console.error('[chat] error:', err);
     return NextResponse.json(
@@ -141,19 +161,16 @@ export async function POST(req: NextRequest) {
 
 function buildSerperIntro(userMessage: string, count: number): string {
   const lower = userMessage.toLowerCase();
-
-  // Pull out the most specific noun phrase from the query for a natural intro
   const match =
     lower.match(/(?:find|show|get|looking for|want|need)\s+(?:me\s+)?(?:a\s+|an\s+|some\s+)?([\w\s]+?)(?:\s+under|\s+below|\s+for|\s+that|$)/) ??
     lower.match(/([\w\s]{4,40})/);
-
   const item = match ? match[1].trim() : 'items';
   return `Found ${count} live result${count !== 1 ? 's' : ''} for "${item}" — ranked by how well they match your style.`;
 }
 
 function buildSerperQuery(
   rawQuery: string,
-  intent?: ChatResponse['intent'],
+  intent: ChatResponse['intent'],
   gender?: UserProfile['gender'],
 ): string {
   const genderPrefix = gender === 'mens' ? "men's" : gender === 'womens' ? "women's" : null;

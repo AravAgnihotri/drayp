@@ -83,6 +83,8 @@ async function uploadTryOnImage(userId: string, imageBase64: string): Promise<st
   return publicUrl;
 }
 
+const TRYON_CREDIT_COST = 100;
+
 export async function POST(req: NextRequest) {
   try {
     const { userImageUrl, garmentImageUrl, userId, garmentTitle } = (await req.json()) as {
@@ -97,6 +99,43 @@ export async function POST(req: NextRequest) {
         { error: 'Both userImageUrl and garmentImageUrl are required' },
         { status: 400 },
       );
+    }
+
+    // Deduct credits before generating (server-side, cannot be bypassed)
+    if (userId) {
+      const admin = createServiceRoleClient();
+      if (admin) {
+        // Ensure row exists (initialize to 200 if new user)
+        await admin
+          .from('user_credits')
+          .upsert({ user_id: userId, credits: 200 }, { onConflict: 'user_id', ignoreDuplicates: true });
+
+        const { data: creditRow } = await admin
+          .from('user_credits')
+          .select('credits')
+          .eq('user_id', userId)
+          .single();
+
+        if (!creditRow || creditRow.credits < TRYON_CREDIT_COST) {
+          return NextResponse.json(
+            { error: 'Not enough credits. You need 100 credits per try-on.' },
+            { status: 402 },
+          );
+        }
+
+        const { error: deductErr } = await admin
+          .from('user_credits')
+          .update({ credits: creditRow.credits - TRYON_CREDIT_COST, updated_at: new Date().toISOString() })
+          .eq('user_id', userId)
+          .eq('credits', creditRow.credits); // optimistic lock: fail if credits changed concurrently
+
+        if (deductErr) {
+          return NextResponse.json(
+            { error: 'Credit deduction failed. Please try again.' },
+            { status: 409 },
+          );
+        }
+      }
     }
 
     let openai: OpenAI;
